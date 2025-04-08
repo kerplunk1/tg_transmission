@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   tg_transmission_bot:
       image: python:3.12.7-bookworm
@@ -8,6 +6,9 @@ services:
       working_dir: /bot
       volumes:
         - ./:/bot
+      env_file:
+        - .env
       command: bash -c "
         pip install -r requirements.txt ;
         python -u bot.py"
+

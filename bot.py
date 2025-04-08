@@ -2,6 +2,7 @@ import requests
 from transmission_rpc import Client
 import re
 import time
+from os import environ
 
 
 class Bot:
@@ -53,7 +54,8 @@ class Bot:
             for upd in updates:
                 message_id = upd['message']['message_id']
                 chat_id = upd['message']['chat']['id']
-                if self.user_id == int(upd['message']['from']['id']):
+                from_user_id = int(upd['message']['from']['id'])
+                if self.user_id == from_user_id:
 
                     document = self.get_file(upd['message'].get('document'))
                     if document is not None:
@@ -76,19 +78,23 @@ class Bot:
                     else:
                         self.send_answer(message_id, chat_id, 'Rejected. Unknown request.')
                 else:
-                    self.send_answer(message_id, chat_id, 'Reject. Permission denied')
+                    self.send_answer(message_id, chat_id, f'Reject. Permission denied. Restart app with user ID {from_user_id}.')
 
 
     def start(self):
         while True:
             updates = self.get_updates()
             self.handle_updates(updates)
-            time.sleep(300)
+            time.sleep(int(environ.get("UPDATE_TIME")))
 
 
 
-torrent_client = Client(host="192.168.1.1", port=8090, username="", password="")
+torrent_client = Client(host=environ.get("TRANSMISSION_SERVER_IP"),
+                        port=environ.get("TRANSMISSION_SERVER_PORT"),
+                        username=environ.get("TRANSMISSION_SERVER_USER"),
+                        password=environ.get("TRANSMISSION_SERVER_PASSWORD"))
 
-bot = Bot("", )
+bot = Bot(bot_token=environ.get("TELEGRAM_BOT_TOKEN"),
+          user_id=int(environ.get("TELEGRAM_USER_ID")))
 bot.start()
 
